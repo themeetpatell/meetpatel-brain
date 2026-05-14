@@ -46,9 +46,11 @@ Expected output includes `pre-migration-2026-05-15`. This is the rollback target
 
 Run:
 ```bash
-find . -path ./.git -prune -o -name "*.md" -print | xargs -n1 basename 2>/dev/null | sort | uniq -d
+find . -path ./.git -prune -o -name "*.md" -print0 2>/dev/null | xargs -0 -n1 basename | sort | uniq -d
 ```
 Expected: empty output. If any duplicates appear, list them in the next step.
+
+(Note: must use `-print0` / `-0` because most note filenames contain spaces.)
 
 - [ ] **Step 4: Rename any duplicates (only if Step 3 returned anything)**
 
@@ -493,7 +495,7 @@ Expected exactly: `00 Inbox`, `10 Daily`, `20 Compass`, `30 Ventures`, `40 Areas
 - [ ] **Step 2: Re-confirm no duplicate filenames**
 
 ```bash
-find . -path ./.git -prune -o -name "*.md" -print | xargs -n1 basename | sort | uniq -d
+find . -path ./.git -prune -o -name "*.md" -print0 | xargs -0 -n1 basename | sort | uniq -d
 ```
 Expected: empty.
 
@@ -1322,7 +1324,7 @@ check "no '10 Personal Brand'" "[[ ! -d '10 Personal Brand' ]]"
 check "no '20 Playbooks'" "[[ ! -d '20 Playbooks' ]]"
 
 # Filename uniqueness
-DUPES=$(find . -path ./.git -prune -o -name "*.md" -print | xargs -n1 basename 2>/dev/null | sort | uniq -d)
+DUPES=$(find . -path ./.git -prune -o -name "*.md" -print0 2>/dev/null | xargs -0 -n1 basename | sort | uniq -d)
 if [[ -z "$DUPES" ]]; then
   echo "  PASS  no duplicate filenames"; PASS=$((PASS+1))
 else
