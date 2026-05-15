@@ -1,0 +1,9 @@
+---
+type: inbox
+created: <% tp.date.now("YYYY-MM-DD") %>
+tags: []
+---
+
+# <% tp.file.title %>
+
+
