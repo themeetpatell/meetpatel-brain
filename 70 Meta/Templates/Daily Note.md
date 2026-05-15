@@ -12,6 +12,14 @@ tags: [daily]
 2. 
 3. 
 
+## Inbox to triage
+```dataview
+LIST
+FROM "00 Inbox"
+WHERE type = "inbox"
+SORT file.ctime ASC
+```
+
 ## Calendar
 
 

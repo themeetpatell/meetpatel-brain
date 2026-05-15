@@ -1,5 +1,33 @@
 {
-  "choices": [],
+  "choices": [
+    {
+      "id": "7e1c3d4a-9b2e-4f5d-8c6a-1f3b5d7e9a0c",
+      "name": "Quick Capture to Inbox",
+      "type": "Capture",
+      "command": true,
+      "captureTo": "00 Inbox/{{DATE:YYYY-MM-DD-HHmm}} {{VALUE}}.md",
+      "captureToActiveFile": false,
+      "createFileIfItDoesntExist": {
+        "enabled": true,
+        "createWithTemplate": true,
+        "template": "70 Meta/Templates/Inbox Quick Capture.md"
+      },
+      "format": {
+        "enabled": false,
+        "format": ""
+      },
+      "prepend": false,
+      "appendLink": false,
+      "task": false,
+      "insertAfter": {
+        "enabled": false,
+        "after": ""
+      },
+      "openFile": false,
+      "openFileInMode": "default",
+      "openFileInNewTab": false
+    }
+  ],
   "inputPrompt": "single-line",
   "persistInputPromptDrafts": true,
   "useSelectionAsCaptureValue": true,

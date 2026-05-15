@@ -1,5 +1,38 @@
 {
-  "periodic-notes:open-daily-note": [{ "modifiers": ["Mod", "Shift"], "key": "D" }],
-  "periodic-notes:open-weekly-note": [{ "modifiers": ["Mod", "Shift"], "key": "W" }],
-  "bookmarks:open-1": [{ "modifiers": ["Mod", "Shift"], "key": "H" }]
+  "periodic-notes:open-daily-note": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "D"
+    }
+  ],
+  "periodic-notes:open-weekly-note": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "W"
+    }
+  ],
+  "bookmarks:open-1": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "H"
+    }
+  ],
+  "quickadd:choice:7e1c3d4a-9b2e-4f5d-8c6a-1f3b5d7e9a0c": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "I"
+    }
+  ]
 }
