@@ -1,0 +1,6 @@
+# Conduct Primary Market Research
+
+Status: Not Started
+Project: Phase I: Discovery and Ideation (../Projects/Phase%20I%20Discovery%20and%20Ideation%20102fa4b7e6dd80e28cbbf2759b5c6cbd.md)
+Sub-tasks: Design research tools (surveys, interview scripts, and focus group guides) tailored to startups and CXOs. (Design%20research%20tools%20(surveys,%20interview%20scripts,%2039f7dca849b24a2aa8c2d943bf5c58f4.md), Recruit 30+ startups (Series A-C) and 30+ CXOs (from different industries) for interviews and surveys. (Recruit%2030+%20startups%20(Series%20A-C)%20and%2030+%20CXOs%20(fr%20d8d11e32e6234b7e911933b4bc818344.md), Conduct in-depth interviews with startups to understand pain points, decision-making processes, and desired solutions. (Conduct%20in-depth%20interviews%20with%20startups%20to%20under%20102fa4b7e6dd80feb918c2086101e77d.md), Conduct in-depth interviews with CXOs to understand their motivations, expectations, and concerns in engaging with startups. (Conduct%20in-depth%20interviews%20with%20CXOs%20to%20understan%20102fa4b7e6dd802dafffcdfa3349a266.md), Perform focus groups with startup founders and CXOs to validate assumptions and gather deeper insights. (Perform%20focus%20groups%20with%20startup%20founders%20and%20CXO%20102fa4b7e6dd80e4b4dfdb45d57ef00f.md)
+Epics: Market Research and Validation

@@ -1,0 +1,6 @@
+# Develop Brand Assets and Collateral
+
+Status: Not Started
+Project: Phase I: Discovery and Ideation (../Projects/Phase%20I%20Discovery%20and%20Ideation%20102fa4b7e6dd80e28cbbf2759b5c6cbd.md)
+Sub-tasks: Design essential brand assets such as business cards, pitch decks, email templates, and social media banners. (Design%20essential%20brand%20assets%20such%20as%20business%20car%20ecc91f5970a1490493af020aa7e8f981.md), Create a brand book that outlines the brand’s guidelines, including tone of voice, visual guidelines, and messaging framework. (Create%20a%20brand%20book%20that%20outlines%20the%20brand%E2%80%99s%20guid%203f08175592f04fa082bd95d34e81639b.md), Develop content templates for future use (blog posts, white papers, case studies). (Develop%20content%20templates%20for%20future%20use%20(blog%20pos%20102fa4b7e6dd80729fdde68701d150a4.md), Develop logo concepts, color palettes, typography, and iconography that reflect the brand’s personality (visionary, authoritative, innovative). (Develop%20logo%20concepts,%20color%20palettes,%20typography,%20102fa4b7e6dd80638c3deccd310da406.md)
+Epics: Brand Identity and Positioning
