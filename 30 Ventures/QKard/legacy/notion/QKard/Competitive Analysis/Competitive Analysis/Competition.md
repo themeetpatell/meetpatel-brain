@@ -1,0 +1,3 @@
+# Competition
+
+Parameters: Product lines

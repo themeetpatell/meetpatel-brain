@@ -1,0 +1,1 @@
+# Chap 6: Eternal Bonds: Trust and Devotion Intertwined

@@ -1,0 +1,9 @@
+# Let's Get Started
+
+## *“Darling, you’re the golden flames of hope in a snowy world, you make flowers bloom with every breath you take, you’re the one that the stars wished for.!”*
+
+If that day, that call, wouldn’t arrived on my phone, I’d not be able to experience the thrill that’s the true love brings to my life, the affection of someone who I always wanted to be with, the care from someone that my inner child always wanted to have, the trust that I got about myself, and the faith I started to have on the time and destiny. I always wanted to be the best, if you were not there, I’d not be even there to be the best. It’ll always be less, thanking you for what you’ve given to me. I don’t miss you often, as you taught me that I shouldn’t do that. Believe me, Now I care about myself, which you asked at the end, the most and I’ve kept myself safe from everything. Your Aariv no longer wakes up at 1 PM, which you always hated, instead before the sun rises, also doesn’t stay awake till late at night, and yeah of course, he eats vegetables and simple food, as you always complained about. But still, there’s an empty space within me, which doesn’t allow me to go for someone else, love someone else, or accept someone else to take that place, I’ve never found someone worthy of that place after you, and I don’t think someone will, that’s why I couldn’t fulfill your last wish that I should get married to someone after you left. And trust me, I am happy, not depressed or sad, and it’s not that I no longer love you, it’s just that I will not love anyone, except your love, and that’s myself. Thank you for your wonderful memories. I’ll cherish them forever!
+
+**With Love::**
+
+## **Meet Patel**

@@ -1,0 +1,4 @@
+# Analyze competitors’ strengths, weaknesses, pricing models, value propositions, and customer reviews.
+
+Status: Not Started
+Parent-task: Perform Competitor Analysis (Perform%20Competitor%20Analysis%20102fa4b7e6dd80ff98c9f77c5b295902.md)

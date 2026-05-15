@@ -1,0 +1,6 @@
+# Develop Self-Service Support Tools and Resources
+
+Status: Not Started
+Project: Phase V: Post-Launch Optimization and User Engagement (../Projects/Phase%20V%20Post-Launch%20Optimization%20and%20User%20Engageme%20102fa4b7e6dd800bb1fff5007b069863.md)
+Sub-tasks: Build a comprehensive online help center with articles, videos, and tutorials that cover common questions, troubleshooting, and best practices. (Build%20a%20comprehensive%20online%20help%20center%20with%20arti%20102fa4b7e6dd8024842de8357d324836.md),  Implement an AI-driven chatbot for instant support that can handle basic queries and route complex issues to human agents. (Implement%20an%20AI-driven%20chatbot%20for%20instant%20support%20102fa4b7e6dd80b2bd77d8fbe7232d67.md), Regularly update self-service resources based on the most frequent user inquiries, new features, and evolving user needs. (Regularly%20update%20self-service%20resources%20based%20on%20t%20102fa4b7e6dd80ff8a42c00c3e9ac114.md)
+Epics: Expanding Customer Support and Success Operations

@@ -1,0 +1,6 @@
+# Coordinate Product and Marketing Alignment Workshops
+
+Status: Not Started
+Project: Phase II: Product Strategy and Design (../Projects/Phase%20II%20Product%20Strategy%20and%20Design%20102fa4b7e6dd80fd9bc0c746eb7b06b0.md)
+Sub-tasks: Host alignment workshops with the product, marketing, and sales teams to ensure consistent messaging and positioning. (Host%20alignment%20workshops%20with%20the%20product,%20marketi%20102fa4b7e6dd80b19b6edf1b8767223b.md), Develop a “Feature-to-Benefit” mapping document that clearly articulates how each product feature translates to customer benefits, ensuring sales and marketing teams can communicate these effectively. (Develop%20a%20%E2%80%9CFeature-to-Benefit%E2%80%9D%20mapping%20document%20th%20102fa4b7e6dd80cf8233ea57f039be4b.md), Plan mock demos and sales pitches with internal teams to refine messaging and get feedback before the launch. (Plan%20mock%20demos%20and%20sales%20pitches%20with%20internal%20te%2076051638fa0a47d5b841443ecc0d6e15.md)
+Epics: GTM Strategy Alignment with Product Development
