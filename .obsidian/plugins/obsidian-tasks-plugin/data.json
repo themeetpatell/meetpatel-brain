@@ -1,0 +1,16 @@
+{
+  "globalQuery": "path does not include 99 Archive",
+  "globalFilter": "",
+  "removeGlobalFilter": false,
+  "setDoneDate": true,
+  "setCreatedDate": false,
+  "setCancelledDate": false,
+  "useDenseMode": false,
+  "autoSuggestInEditor": true,
+  "autoSuggestMinMatch": 0,
+  "autoSuggestMaxItems": 6,
+  "provideAccessKeys": true,
+  "useFilenameAsScheduledDate": false,
+  "filenameAsDateFolders": [],
+  "recurrenceOnNextLine": false
+}
