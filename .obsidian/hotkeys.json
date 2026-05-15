@@ -1,4 +1,5 @@
 {
   "periodic-notes:open-daily-note": [{ "modifiers": ["Mod", "Shift"], "key": "D" }],
-  "periodic-notes:open-weekly-note": [{ "modifiers": ["Mod", "Shift"], "key": "W" }]
+  "periodic-notes:open-weekly-note": [{ "modifiers": ["Mod", "Shift"], "key": "W" }],
+  "bookmarks:open-1": [{ "modifiers": ["Mod", "Shift"], "key": "H" }]
 }
