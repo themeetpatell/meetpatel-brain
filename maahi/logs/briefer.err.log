@@ -1,0 +1,6 @@
+INFO:__main__:Morning brief starting.
+INFO:__main__:Brief assembled: 69 spoken chars, 212 markdown chars
+INFO:__main__:Appended to daily: {'ok': True, 'path': 'Daily Notes/2026-05-17.md'}
+INFO:maahi.speaker:piper binary not on PATH.
+INFO:maahi.speaker:Piper unavailable — Speaker falling back to macOS 'say'.
+INFO:__main__:Morning brief done.

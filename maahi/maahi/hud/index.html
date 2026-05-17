@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Maahi</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="data:," />
+<style>
+  :root {
+    --bg: rgba(8, 12, 22, 0.62);
+    --bg-strong: rgba(8, 12, 22, 0.94);
+    --border: rgba(120, 220, 255, 0.22);
+    --accent: #6df0ff;
+    --user: #ffd66e;
+    --maahi: #b6f0ff;
+    --tool: #c8ffb1;
+    --error: #ff7a7a;
+    --shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+    --radius: 16px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background: transparent; color: #e8f4ff;
+    font-family: var(--font); overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+  }
+  /* Standalone (regular browser tab) gets an opaque backdrop so the HUD
+     is visible. The pywebview floating window keeps the transparent body. */
+  body.standalone {
+    background:
+      radial-gradient(circle at 30% 20%, rgba(80,180,255,0.18), transparent 55%),
+      radial-gradient(circle at 80% 90%, rgba(140,90,255,0.18), transparent 55%),
+      #06080f;
+  }
+
+  #dot {
+    position: fixed; bottom: 16px; right: 16px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 14px rgba(109,240,255,0.85), 0 0 36px rgba(109,240,255,0.45);
+    animation: breathe 2.4s ease-in-out infinite;
+    cursor: pointer; z-index: 10;
+    transition: opacity 0.25s ease, transform 0.2s ease;
+  }
+  #dot.muted {
+    background: #6f7a8a;
+    box-shadow: 0 0 6px rgba(120,130,145,0.4);
+    animation: none;
+  }
+  #dot.active { animation: pulse 0.9s ease-in-out infinite; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 14px rgba(109,240,255,0.95), 0 0 36px rgba(109,240,255,0.55); }
+    50% { transform: scale(1.4); box-shadow: 0 0 24px rgba(109,240,255,1), 0 0 60px rgba(109,240,255,0.7); }
+  }
+
+  #panel {
+    position: fixed; inset: 8px;
+    background: var(--bg);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    opacity: 1;                  /* always visible by default */
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  /* Pywebview floating window starts in "compact" mode — only the dot
+     shows; the panel fades in when something happens. Browser standalone
+     mode keeps the panel up so you can see it. */
+  body.compact #panel {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px) scale(0.985);
+  }
+  body.compact #panel.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+  body.standalone #panel {
+    background: var(--bg-strong);
+  }
+
+  .titlebar {
+    height: 28px; flex: 0 0 auto;
+    display: flex; align-items: center;
+    padding: 0 10px;
+    -webkit-app-region: drag; cursor: grab;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .titlebar .name {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); opacity: 0.85;
+  }
+  .titlebar .state {
+    margin-left: auto;
+    font-size: 10.5px; color: #aac6d8;
+    font-variant-numeric: tabular-nums;
+  }
+  .titlebar .state .led {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: #5a6a78;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .titlebar .state.idle .led { background: #5a6a78; }
+  .titlebar .state.listening .led { background: #ffd66e; box-shadow: 0 0 6px #ffd66e; }
+  .titlebar .state.thinking  .led { background: #c89bff; box-shadow: 0 0 6px #c89bff; }
+  .titlebar .state.speaking  .led { background: #6df0ff; box-shadow: 0 0 6px #6df0ff; }
+  .titlebar .state.acting    .led { background: #c8ffb1; box-shadow: 0 0 6px #c8ffb1; }
+  .titlebar .state.error     .led { background: var(--error); box-shadow: 0 0 6px var(--error); }
+
+  #transcript {
+    flex: 1 1 auto; overflow-y: auto;
+    padding: 8px 12px 6px;
+    font-size: 12.5px; line-height: 1.42;
+    scrollbar-width: thin; scrollbar-color: rgba(120,220,255,0.18) transparent;
+  }
+  #transcript::-webkit-scrollbar { width: 6px; }
+  #transcript::-webkit-scrollbar-thumb {
+    background: rgba(120,220,255,0.18); border-radius: 3px;
+  }
+  .placeholder {
+    color: #7e94a4; font-size: 12px; padding: 12px 0;
+    text-align: center; opacity: 0.9; line-height: 1.5;
+  }
+  .placeholder b { color: var(--accent); font-weight: 600; }
+  .line { margin-bottom: 4px; }
+  .line .who {
+    display: inline-block; width: 46px;
+    color: #7e94a4; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    vertical-align: top;
+  }
+  .line.user  .text { color: var(--user); }
+  .line.maahi .text { color: var(--maahi); }
+  .line.tool  .text { color: var(--tool); font-style: italic; opacity: 0.92; }
+  .line.heard .text { color: #7e94a4; font-style: italic; font-size: 11.5px; }
+  .line.error .text { color: var(--error); }
+  .line .text { display: inline-block; max-width: calc(100% - 56px); word-wrap: break-word; }
+
+  #footer {
+    flex: 0 0 auto;
+    display: flex; gap: 10px;
+    padding: 6px 12px 10px;
+    align-items: stretch;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    min-height: 40px;
+  }
+  #vision {
+    width: 72px; height: 42px; border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(120,220,255,0.12);
+    object-fit: cover; flex: 0 0 auto;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  #vision.show { opacity: 1; }
+  #ticker {
+    flex: 1 1 auto; align-self: center;
+    font-size: 11px; color: #9fb6c5;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  #ticker .tool { color: var(--tool); }
+  #ticker .arg  { color: #c0d2dd; opacity: 0.7; }
+</style>
+</head>
+<body>
+  <div id="dot" title="Maahi (click to wake)"></div>
+
+  <div id="panel">
+    <div class="titlebar">
+      <span class="name">MAAHI</span>
+      <span id="stateBadge" class="state idle"><span class="led"></span><span id="stateLabel">idle</span></span>
+    </div>
+    <div id="transcript">
+      <div class="placeholder">
+        Listening for <b>"Hey Maahi"</b>.<br>
+        Or click the cyan dot to force-wake.
+      </div>
+    </div>
+    <div id="footer">
+      <img id="vision" alt="" />
+      <div id="ticker">—</div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const dot       = document.getElementById("dot");
+  const panel     = document.getElementById("panel");
+  const tr        = document.getElementById("transcript");
+  const stateBadge= document.getElementById("stateBadge");
+  const stateLabel= document.getElementById("stateLabel");
+  const vision    = document.getElementById("vision");
+  const ticker    = document.getElementById("ticker");
+
+  const MAX_LINES   = 60;
+  const COLLAPSE_MS = 8000;
+  let collapseTimer = null;
+  let lastSeq       = 0;
+  let placeholderRemoved = false;
+
+  // Detect mode: compact (floating pywebview window) vs standalone (browser tab).
+  // Anything wider than the configured HUD width (~440) is treated as a browser tab.
+  if (window.innerWidth > 460 || window.innerHeight > 280) {
+    document.body.classList.add("standalone");
+  } else {
+    document.body.classList.add("compact");
+  }
+
+  function clearPlaceholder() {
+    if (placeholderRemoved) return;
+    const ph = tr.querySelector(".placeholder");
+    if (ph) ph.remove();
+    placeholderRemoved = true;
+  }
+
+  function setState(name) {
+    stateBadge.className = "state " + name;
+    stateLabel.textContent = name;
+    if (name === "idle") {
+      dot.classList.remove("active");
+    } else {
+      dot.classList.add("active");
+      openPanel();
+    }
+  }
+  function openPanel() {
+    panel.classList.add("open");
+    clearTimeout(collapseTimer);
+    // Only auto-collapse in compact (floating) mode.
+    if (document.body.classList.contains("compact")) {
+      collapseTimer = setTimeout(() => panel.classList.remove("open"), COLLAPSE_MS);
+    }
+  }
+  function appendLine(kind, who, text) {
+    clearPlaceholder();
+    const div = document.createElement("div");
+    div.className = "line " + kind;
+    div.innerHTML = `<span class="who"></span><span class="text"></span>`;
+    div.firstElementChild.textContent = who;
+    div.lastElementChild.textContent = text;
+    tr.appendChild(div);
+    while (tr.children.length > MAX_LINES) tr.removeChild(tr.firstChild);
+    tr.scrollTop = tr.scrollHeight;
+  }
+  function setTicker(html) { ticker.innerHTML = html || "—"; }
+  function showVisionThumb(b64) {
+    if (!b64) { vision.classList.remove("show"); vision.removeAttribute("src"); return; }
+    vision.src = "data:image/jpeg;base64," + b64;
+    vision.classList.add("show");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
+  function handleEvent(ev) {
+    if (typeof ev.seq === "number") {
+      if (ev.seq <= lastSeq && !ev.replay) return;
+      lastSeq = ev.seq;
+    }
+    const p = ev.payload || {};
+    switch (ev.type) {
+      case "state":
+        setState(p.state || "idle");
+        break;
+      case "heard":
+        // Diagnostic: shows what STT heard during a wake-check.
+        appendLine("heard", "stt", `heard: "${p.text}"`);
+        openPanel();
+        break;
+      case "transcript":
+        if (p.speaker === "user")  appendLine("user",  "you",   p.text);
+        if (p.speaker === "maahi") appendLine("maahi", "maahi", p.text);
+        openPanel();
+        break;
+      case "tool_start": {
+        const args = p.args ? JSON.stringify(p.args) : "";
+        setTicker(`<span class="tool">${escapeHtml(p.name)}</span> <span class="arg">${escapeHtml(args)}</span>`);
+        appendLine("tool", "tool", `→ ${p.name}`);
+        openPanel();
+        break;
+      }
+      case "tool_end": {
+        const ok = p.result && p.result.ok !== false;
+        setTicker(ok
+          ? `${escapeHtml(p.name)} <span class="arg">✓</span>`
+          : `${escapeHtml(p.name)} <span class="arg">— failed</span>`);
+        break;
+      }
+      case "vision_capture":
+        showVisionThumb(p.thumb);
+        openPanel();
+        break;
+      case "control_action": {
+        const kind = p.kind || "act";
+        let detail = "";
+        if (kind === "move" || kind === "click") detail = `(${p.x},${p.y})`;
+        else if (kind === "type") detail = `${p.chars} chars`;
+        else if (kind === "key")  detail = p.combo;
+        else if (kind === "ax")   detail = `${p.app}/${p.action}`;
+        setTicker(`<span class="tool">${escapeHtml(kind)}</span> <span class="arg">${escapeHtml(detail)}</span>`);
+        break;
+      }
+      case "speak_chunk":
+        openPanel();
+        break;
+      case "error":
+        setState("error");
+        appendLine("error", "err", `[${p.where}] ${p.message}`);
+        break;
+    }
+  }
+
+  let ws = null;
+  let reconnectMs = 600;
+  function connect() {
+    const url = `ws://${location.host}/ws`;
+    ws = new WebSocket(url);
+    ws.onopen = () => {
+      reconnectMs = 600;
+      dot.classList.remove("muted");
+      openPanel();
+    };
+    ws.onmessage = (m) => {
+      try { handleEvent(JSON.parse(m.data)); } catch (e) {}
+    };
+    ws.onclose = () => {
+      dot.classList.add("muted");
+      setTimeout(connect, reconnectMs);
+      reconnectMs = Math.min(reconnectMs * 1.6, 5000);
+    };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  }
+  connect();
+
+  dot.addEventListener("click", () => {
+    openPanel();
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: "wake_request", payload: {} }));
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") panel.classList.remove("open");
+  });
+})();
+</script>
+</body>
+</html>
