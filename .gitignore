@@ -3,3 +3,10 @@
 .obsidian/cache
 .obsidian/cache.json
 .trash/
+
+# Node toolchain (extractor + future tooling)
+node_modules/
+.npm/
+
+# Extractor outputs (the published JSON lives in the site repo, not here)
+public/mind/
