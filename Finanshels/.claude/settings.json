@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(/.claude/skills/contract-reviewer-compliance/**)",
+      "Edit(/.claude/skills/engagement-budget-calculator/**)",
+      "Edit(/.claude/skills/tax-metrics-dashboard/**)",
+      "Edit(/.claude/skills/tax-data-validator/**)",
+      "Edit(/.claude/skills/onboarding-checklist-team/**)",
+      "Edit(/.claude/skills/tax-advisory-consultant/**)",
+      "Edit(/.claude/skills/tax-question-answerer/**)",
+      "Edit(/.claude/skills/training-plan-tax-updates/**)",
+      "Edit(/.claude/skills/risk-assessment-tax/**)",
+      "Edit(/.claude/skills/performance-review-guide/**)",
+      "Bash(python3 validation-rules.py)",
+      "Edit(/.claude/skills/brand-consistency-guide/**)",
+      "Edit(/.claude/skills/malpractice-prevention-guide/**)",
+      "Edit(/.claude/skills/workflow-optimizer/**)",
+      "Edit(/.claude/skills/client-data-analyzer/**)",
+      "Edit(/.claude/skills/content-planner-tax/**)",
+      "Edit(/.claude/skills/prospect-qualification/**)",
+      "Edit(/.claude/skills/audit-workpaper-reviewer/**)"
+    ]
+  }
+}

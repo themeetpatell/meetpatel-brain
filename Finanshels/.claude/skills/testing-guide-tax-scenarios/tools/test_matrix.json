@@ -1,0 +1,547 @@
+{
+  "title": "UAE Tax Scenario Test Matrix",
+  "jurisdiction": "UAE (FTA)",
+  "law_references": [
+    "Federal Decree-Law No. 47 of 2022 (Corporate Tax)",
+    "Federal Decree-Law No. 8 of 2017 (VAT)"
+  ],
+  "disclaimer": "Verify all thresholds and rates against current FTA guidance before relying on this matrix for compliance sign-off. Tax law changes.",
+  "summary": {
+    "total_cases": 37,
+    "boundary_cases": 17,
+    "by_area": {
+      "CT_THRESHOLD": 10,
+      "SMALL_BUSINESS_RELIEF": 6,
+      "QFZP": 5,
+      "VAT_CALCULATION": 10,
+      "VAT_REGISTRATION": 6
+    }
+  },
+  "cases": [
+    {
+      "id": "CT-01",
+      "area": "CT_THRESHOLD",
+      "description": "Zero taxable income",
+      "input": {
+        "taxable_income_aed": "0"
+      },
+      "expected": {
+        "ct_payable_aed": "0.00"
+      },
+      "rule": "0% applies on income \u2264 AED 375,000 (inclusive)",
+      "boundary": false,
+      "_verified_expected": "0.00"
+    },
+    {
+      "id": "CT-02",
+      "area": "CT_THRESHOLD",
+      "description": "Income well below threshold (AED 100,000)",
+      "input": {
+        "taxable_income_aed": "100000"
+      },
+      "expected": {
+        "ct_payable_aed": "0.00"
+      },
+      "rule": "0% on \u2264 AED 375,000",
+      "boundary": false,
+      "_verified_expected": "0.00"
+    },
+    {
+      "id": "CT-03",
+      "area": "CT_THRESHOLD",
+      "description": "Income just below threshold (AED 374,999)",
+      "input": {
+        "taxable_income_aed": "374999"
+      },
+      "expected": {
+        "ct_payable_aed": "0.00"
+      },
+      "rule": "0% on \u2264 AED 375,000",
+      "boundary": true,
+      "_verified_expected": "0.00"
+    },
+    {
+      "id": "CT-04",
+      "area": "CT_THRESHOLD",
+      "description": "Income exactly at threshold (AED 375,000) \u2014 boundary inclusive",
+      "input": {
+        "taxable_income_aed": "375000"
+      },
+      "expected": {
+        "ct_payable_aed": "0.00"
+      },
+      "rule": "0% on \u2264 AED 375,000 (inclusive boundary)",
+      "boundary": true,
+      "_verified_expected": "0.00"
+    },
+    {
+      "id": "CT-05",
+      "area": "CT_THRESHOLD",
+      "description": "Income one fils above threshold (AED 375,000.01)",
+      "input": {
+        "taxable_income_aed": "375000.01"
+      },
+      "expected": {
+        "ct_payable_aed": "0.00"
+      },
+      "rule": "9% on excess; AED 0.01 excess \u2192 AED 0.00 after rounding",
+      "boundary": true,
+      "_verified_expected": "0.00"
+    },
+    {
+      "id": "CT-06",
+      "area": "CT_THRESHOLD",
+      "description": "Income one dirham above threshold (AED 375,001)",
+      "input": {
+        "taxable_income_aed": "375001"
+      },
+      "expected": {
+        "ct_payable_aed": "0.09"
+      },
+      "rule": "9% on AED 1 excess = AED 0.09",
+      "boundary": true,
+      "_verified_expected": "0.09"
+    },
+    {
+      "id": "CT-07",
+      "area": "CT_THRESHOLD",
+      "description": "Typical SME income (AED 1,000,000)",
+      "input": {
+        "taxable_income_aed": "1000000"
+      },
+      "expected": {
+        "ct_payable_aed": "56250.00"
+      },
+      "rule": "9% on AED 625,000 (1,000,000 \u2212 375,000) = AED 56,250",
+      "boundary": false,
+      "_verified_expected": "56250.00"
+    },
+    {
+      "id": "CT-08",
+      "area": "CT_THRESHOLD",
+      "description": "High income (AED 10,000,000)",
+      "input": {
+        "taxable_income_aed": "10000000"
+      },
+      "expected": {
+        "ct_payable_aed": "866250.00"
+      },
+      "rule": "9% on AED 9,625,000 (10,000,000 \u2212 375,000) = AED 866,250",
+      "boundary": false,
+      "_verified_expected": "866250.00"
+    },
+    {
+      "id": "CT-09",
+      "area": "CT_THRESHOLD",
+      "description": "Negative income (loss) \u2014 CT payable must be zero, not negative",
+      "input": {
+        "taxable_income_aed": "-50000"
+      },
+      "expected": {
+        "ct_payable_aed": "0.00"
+      },
+      "rule": "Tax loss carry-forward applies; no tax payable on a loss",
+      "boundary": false
+    },
+    {
+      "id": "CT-10",
+      "area": "CT_THRESHOLD",
+      "description": "Null income \u2014 must raise a typed error",
+      "input": {
+        "taxable_income_aed": null
+      },
+      "expected": {
+        "error": "ValueError or TypeError \u2014 input must be numeric"
+      },
+      "rule": "Input validation \u2014 never default null to zero silently",
+      "boundary": false
+    },
+    {
+      "id": "SBR-01",
+      "area": "SMALL_BUSINESS_RELIEF",
+      "description": "Revenue well below limit, within relief period",
+      "input": {
+        "revenue_aed": "500000",
+        "tax_period_end": "2024-12-31"
+      },
+      "expected": {
+        "qualifies": true,
+        "taxable_income_treated_as": "0"
+      },
+      "rule": "Revenue \u2264 AED 3,000,000 and period ends \u2264 31 Dec 2026",
+      "boundary": false
+    },
+    {
+      "id": "SBR-02",
+      "area": "SMALL_BUSINESS_RELIEF",
+      "description": "Revenue exactly at limit (AED 3,000,000) \u2014 boundary inclusive",
+      "input": {
+        "revenue_aed": "3000000",
+        "tax_period_end": "2025-12-31"
+      },
+      "expected": {
+        "qualifies": true,
+        "taxable_income_treated_as": "0"
+      },
+      "rule": "Revenue \u2264 AED 3,000,000 (inclusive)",
+      "boundary": true
+    },
+    {
+      "id": "SBR-03",
+      "area": "SMALL_BUSINESS_RELIEF",
+      "description": "Revenue one dirham above limit (AED 3,000,001) \u2014 does NOT qualify",
+      "input": {
+        "revenue_aed": "3000001",
+        "tax_period_end": "2025-12-31"
+      },
+      "expected": {
+        "qualifies": false
+      },
+      "rule": "Revenue > AED 3,000,000 \u2192 no relief",
+      "boundary": true
+    },
+    {
+      "id": "SBR-04",
+      "area": "SMALL_BUSINESS_RELIEF",
+      "description": "Revenue qualifies but period ends 31 Dec 2026 \u2014 last eligible date",
+      "input": {
+        "revenue_aed": "1000000",
+        "tax_period_end": "2026-12-31"
+      },
+      "expected": {
+        "qualifies": true
+      },
+      "rule": "Relief available for periods ending on or before 31 Dec 2026",
+      "boundary": true
+    },
+    {
+      "id": "SBR-05",
+      "area": "SMALL_BUSINESS_RELIEF",
+      "description": "Revenue qualifies but period ends 1 Jan 2027 \u2014 first ineligible date",
+      "input": {
+        "revenue_aed": "1000000",
+        "tax_period_end": "2027-01-01"
+      },
+      "expected": {
+        "qualifies": false
+      },
+      "rule": "Relief NOT available for periods ending after 31 Dec 2026",
+      "boundary": true
+    },
+    {
+      "id": "SBR-06",
+      "area": "SMALL_BUSINESS_RELIEF",
+      "description": "Entity elected out of SBR \u2014 does not qualify regardless of revenue",
+      "input": {
+        "revenue_aed": "500000",
+        "tax_period_end": "2025-12-31",
+        "sbr_election": false
+      },
+      "expected": {
+        "qualifies": false
+      },
+      "rule": "SBR is an election; entity can opt out",
+      "boundary": false
+    },
+    {
+      "id": "QFZP-01",
+      "area": "QFZP",
+      "description": "All income is qualifying \u2014 zero CT",
+      "input": {
+        "qualifying_income_aed": "5000000",
+        "non_qualifying_income_aed": "0"
+      },
+      "expected": {
+        "ct_on_qualifying": "0.00",
+        "ct_on_non_qualifying": "0.00",
+        "total_ct": "0.00"
+      },
+      "rule": "0% on all qualifying income for QFZP",
+      "boundary": false
+    },
+    {
+      "id": "QFZP-02",
+      "area": "QFZP",
+      "description": "Non-qualifying income below CT threshold \u2014 zero CT on both",
+      "input": {
+        "qualifying_income_aed": "2000000",
+        "non_qualifying_income_aed": "300000"
+      },
+      "expected": {
+        "ct_on_qualifying": "0.00",
+        "ct_on_non_qualifying": "0.00",
+        "total_ct": "0.00"
+      },
+      "rule": "Non-qualifying income \u2264 AED 375,000 \u2192 0% CT applies",
+      "boundary": false
+    },
+    {
+      "id": "QFZP-03",
+      "area": "QFZP",
+      "description": "Non-qualifying income above CT threshold \u2014 9% on excess only",
+      "input": {
+        "qualifying_income_aed": "3000000",
+        "non_qualifying_income_aed": "1000000"
+      },
+      "expected": {
+        "ct_on_qualifying": "0.00",
+        "ct_on_non_qualifying": "56250.00",
+        "total_ct": "56250.00"
+      },
+      "rule": "9% on non-qualifying income above AED 375,000",
+      "boundary": false
+    },
+    {
+      "id": "QFZP-04",
+      "area": "QFZP",
+      "description": "Non-qualifying income exactly at CT threshold \u2014 still zero CT",
+      "input": {
+        "qualifying_income_aed": "1000000",
+        "non_qualifying_income_aed": "375000"
+      },
+      "expected": {
+        "ct_on_qualifying": "0.00",
+        "ct_on_non_qualifying": "0.00",
+        "total_ct": "0.00"
+      },
+      "rule": "CT threshold is inclusive; AED 375,000 non-qualifying \u2192 0%",
+      "boundary": true
+    },
+    {
+      "id": "QFZP-05",
+      "area": "QFZP",
+      "description": "De minimis: non-qualifying income > 5% of total income \u2014 QFZP status lost",
+      "input": {
+        "qualifying_income_aed": "900000",
+        "non_qualifying_income_aed": "100000",
+        "de_minimis_breached": true
+      },
+      "expected": {
+        "qfzp_status": "LOST",
+        "note": "All income taxed as regular taxable person"
+      },
+      "rule": "De minimis threshold breach \u2192 entire QFZP benefit lost for the period",
+      "boundary": true
+    },
+    {
+      "id": "VAT-CALC-01",
+      "area": "VAT_CALCULATION",
+      "description": "Standard-rated (S): clean round amount",
+      "input": {
+        "net_amount_aed": "10000.00",
+        "vat_category": "S"
+      },
+      "expected": {
+        "vat_amount_aed": "500.00"
+      },
+      "rule": "5% \u00d7 AED 10,000 = AED 500.00",
+      "boundary": false
+    },
+    {
+      "id": "VAT-CALC-02",
+      "area": "VAT_CALCULATION",
+      "description": "Standard-rated (S): amount producing recurring decimal",
+      "input": {
+        "net_amount_aed": "100.00",
+        "vat_category": "S"
+      },
+      "expected": {
+        "vat_amount_aed": "5.00"
+      },
+      "rule": "5% \u00d7 AED 100.00 = AED 5.00",
+      "boundary": false
+    },
+    {
+      "id": "VAT-CALC-03",
+      "area": "VAT_CALCULATION",
+      "description": "Standard-rated (S): AED 1.00 \u2014 minimum meaningful invoice",
+      "input": {
+        "net_amount_aed": "1.00",
+        "vat_category": "S"
+      },
+      "expected": {
+        "vat_amount_aed": "0.05"
+      },
+      "rule": "5% \u00d7 AED 1.00 = AED 0.05",
+      "boundary": true
+    },
+    {
+      "id": "VAT-CALC-04",
+      "area": "VAT_CALCULATION",
+      "description": "Standard-rated (S): amount that rounds to 3 decimal places before rounding",
+      "input": {
+        "net_amount_aed": "33.33",
+        "vat_category": "S"
+      },
+      "expected": {
+        "vat_amount_aed": "1.67"
+      },
+      "rule": "5% \u00d7 33.33 = 1.6665 \u2192 rounds to 1.67 (half-up)",
+      "boundary": true
+    },
+    {
+      "id": "VAT-CALC-05",
+      "area": "VAT_CALCULATION",
+      "description": "Zero-rated (Z): VAT must be AED 0.00",
+      "input": {
+        "net_amount_aed": "50000.00",
+        "vat_category": "Z"
+      },
+      "expected": {
+        "vat_amount_aed": "0.00"
+      },
+      "rule": "Zero-rated supply: 0% \u2014 supply is taxable but VAT = 0",
+      "boundary": false
+    },
+    {
+      "id": "VAT-CALC-06",
+      "area": "VAT_CALCULATION",
+      "description": "Exempt (E): VAT must be AED 0.00; no input tax recovery",
+      "input": {
+        "net_amount_aed": "20000.00",
+        "vat_category": "E"
+      },
+      "expected": {
+        "vat_amount_aed": "0.00",
+        "input_tax_recoverable": false
+      },
+      "rule": "Exempt supply: 0% \u2014 supply is not taxable; cannot recover input VAT",
+      "boundary": false
+    },
+    {
+      "id": "VAT-CALC-07",
+      "area": "VAT_CALCULATION",
+      "description": "Out of scope (OS): VAT must be AED 0.00; excluded from VAT return",
+      "input": {
+        "net_amount_aed": "5000.00",
+        "vat_category": "OS"
+      },
+      "expected": {
+        "vat_amount_aed": "0.00",
+        "included_in_vat_return": false
+      },
+      "rule": "Out-of-scope supply: not subject to UAE VAT; excluded from Box 1",
+      "boundary": false
+    },
+    {
+      "id": "VAT-CALC-08",
+      "area": "VAT_CALCULATION",
+      "description": "Large amount \u2014 rounding on AED 999,999.99",
+      "input": {
+        "net_amount_aed": "999999.99",
+        "vat_category": "S"
+      },
+      "expected": {
+        "vat_amount_aed": "50000.00"
+      },
+      "rule": "5% \u00d7 999,999.99 = 49,999.9995 \u2192 rounds to 50,000.00",
+      "boundary": true
+    },
+    {
+      "id": "VAT-CALC-09",
+      "area": "VAT_CALCULATION",
+      "description": "Invalid category code \u2014 must raise error",
+      "input": {
+        "net_amount_aed": "1000.00",
+        "vat_category": "X"
+      },
+      "expected": {
+        "error": "ValueError \u2014 'X' is not a valid UAE VAT category"
+      },
+      "rule": "Only S, Z, E, OS are valid UAE VAT category codes",
+      "boundary": false
+    },
+    {
+      "id": "VAT-CALC-10",
+      "area": "VAT_CALCULATION",
+      "description": "Negative net amount (credit note, standard-rated)",
+      "input": {
+        "net_amount_aed": "-1000.00",
+        "vat_category": "S"
+      },
+      "expected": {
+        "vat_amount_aed": "-50.00"
+      },
+      "rule": "Credit notes carry negative VAT; reversal of original invoice",
+      "boundary": false
+    },
+    {
+      "id": "VAT-REG-01",
+      "area": "VAT_REGISTRATION",
+      "description": "Supplies well below voluntary threshold \u2014 not required",
+      "input": {
+        "taxable_supplies_12m_aed": "100000"
+      },
+      "expected": {
+        "registration_status": "NOT_REQUIRED"
+      },
+      "rule": "Supplies \u2264 AED 187,500 \u2192 no registration obligation or eligibility",
+      "boundary": false
+    },
+    {
+      "id": "VAT-REG-02",
+      "area": "VAT_REGISTRATION",
+      "description": "Supplies just above voluntary threshold (AED 187,501)",
+      "input": {
+        "taxable_supplies_12m_aed": "187501"
+      },
+      "expected": {
+        "registration_status": "VOLUNTARY_ELIGIBLE"
+      },
+      "rule": "AED 187,500 < supplies \u2264 AED 375,000 \u2192 voluntary registration eligible",
+      "boundary": true
+    },
+    {
+      "id": "VAT-REG-03",
+      "area": "VAT_REGISTRATION",
+      "description": "Supplies exactly at voluntary threshold (AED 187,500)",
+      "input": {
+        "taxable_supplies_12m_aed": "187500"
+      },
+      "expected": {
+        "registration_status": "NOT_REQUIRED"
+      },
+      "rule": "AED 187,500 is the lower bound for voluntary eligibility (exclusive)",
+      "boundary": true
+    },
+    {
+      "id": "VAT-REG-04",
+      "area": "VAT_REGISTRATION",
+      "description": "Supplies exactly at mandatory threshold (AED 375,000)",
+      "input": {
+        "taxable_supplies_12m_aed": "375000"
+      },
+      "expected": {
+        "registration_status": "VOLUNTARY_ELIGIBLE"
+      },
+      "rule": "Mandatory threshold is exceeded at > AED 375,000, not at exactly AED 375,000",
+      "boundary": true
+    },
+    {
+      "id": "VAT-REG-05",
+      "area": "VAT_REGISTRATION",
+      "description": "Supplies one dirham above mandatory threshold (AED 375,001)",
+      "input": {
+        "taxable_supplies_12m_aed": "375001"
+      },
+      "expected": {
+        "registration_status": "MANDATORY"
+      },
+      "rule": "Supplies > AED 375,000 \u2192 mandatory registration required",
+      "boundary": true
+    },
+    {
+      "id": "VAT-REG-06",
+      "area": "VAT_REGISTRATION",
+      "description": "Supplies well above mandatory threshold (AED 2,000,000)",
+      "input": {
+        "taxable_supplies_12m_aed": "2000000"
+      },
+      "expected": {
+        "registration_status": "MANDATORY"
+      },
+      "rule": "Supplies > AED 375,000 \u2192 mandatory",
+      "boundary": false
+    }
+  ]
+}
