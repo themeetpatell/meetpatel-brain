@@ -963,6 +963,18 @@
       && !localStorage.getItem("maahi.wizard.completed")) {
     setTimeout(() => openWizard(false), 800);
   }
+
+  // ----- URL hash routing -----
+  // Menu-bar app opens /#settings or /#permissions to deep-link into a view.
+  function applyHashRoute() {
+    const hash = (location.hash || "").replace(/^#/, "").toLowerCase();
+    if (!hash) return;
+    if (hash === "permissions") { openWizard(true); return; }
+    const targetTab = [...tabs].find((t) => t.dataset.view === hash);
+    if (targetTab) targetTab.click();
+  }
+  window.addEventListener("hashchange", applyHashRoute);
+  applyHashRoute();
 })();
 </script>
 </body>

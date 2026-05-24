@@ -17,7 +17,7 @@ from collections.abc import Callable
 
 import time as _time
 
-from . import fast_path, hud_server, hud_window
+from . import fast_path, hud_server, hud_window, listening_state
 from .audio_io import Microphone
 from .barge_in import BargeInWatcher
 from .brain import Brain
@@ -123,6 +123,9 @@ def run() -> None:
     # Start HUD server (daemon thread, its own asyncio loop).
     if cfg.hud.enabled:
         hud_server.start_in_thread(cfg.hud)
+
+    # Subscribe to listening_set events so the Pause toggle actually pauses.
+    listening_state.start_listener()
 
     # Best-effort: spawn the menu-bar helper as a separate process. It runs
     # rumps (NSStatusItem) which insists on the macOS main thread — same as
@@ -235,6 +238,11 @@ def _wake_loop(stop_event: threading.Event) -> None:
             for utt in mic.utterances(silence_seconds=cfg.wake.silence_seconds):
                 if stop_event.is_set():
                     break
+
+                # Honor the Pause toggle from the HUD / menu bar. We still
+                # drain the mic so audio doesn't pile up — we just don't act.
+                if listening_state.is_paused():
+                    continue
 
                 # Single high-quality transcribe pass.
                 full = transcribe(utt)
