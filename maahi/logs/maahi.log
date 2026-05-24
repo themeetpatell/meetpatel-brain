@@ -198,3 +198,31 @@
 2026-05-17 14:15:43,137 INFO    maahi :: Force-wake armed for 6.0s
 2026-05-17 14:15:52,872 INFO    maahi :: Force-wake armed for 6.0s
 2026-05-17 14:16:06,497 INFO    maahi :: Heard (no wake): 'Mayi open the music'
+2026-05-25 01:41:50,915 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-25 01:41:51,117 INFO    maahi :: Menu-bar helper spawned (pid=13722)
+2026-05-25 01:41:51,148 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:7b
+2026-05-25 01:41:51,826 INFO    maahi.hud_server :: HUD WS connected
+2026-05-25 01:41:54,743 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-25 01:41:54,777 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-25 01:41:54,777 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-25 01:43:04,143 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-25 01:43:04,219 INFO    maahi :: Menu-bar helper spawned (pid=15173)
+2026-05-25 01:43:04,257 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:7b
+2026-05-25 01:43:04,594 INFO    maahi.hud_server :: HUD WS connected
+2026-05-25 01:43:07,143 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-25 01:43:07,181 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-25 01:43:07,181 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-25 01:43:27,319 INFO    maahi.hud_server :: HUD server listening on http://127.0.0.1:7421
+2026-05-25 01:43:27,399 INFO    maahi :: Menu-bar helper spawned (pid=15941)
+2026-05-25 01:43:27,438 INFO    maahi :: Maahi online. Voice: Samantha | Model: qwen2.5:7b
+2026-05-25 01:43:27,759 INFO    maahi.hud_server :: HUD WS connected
+2026-05-25 01:43:30,016 WARNING maahi.brain :: Brain prewarm failed: Client error '404 Not Found' for url 'http://localhost:11434/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-05-25 01:43:30,039 INFO    maahi.audio_io :: Microphone open at 16000 Hz
+2026-05-25 01:43:30,039 INFO    maahi.proactive :: Proactive monitor on (poll=60s, lead=5m).
+2026-05-25 01:43:31,771 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-25 01:43:42,119 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-25 01:43:45,661 INFO    maahi :: Force-wake armed for 6.0s
+2026-05-25 01:43:52,428 INFO    maahi :: Force-wake armed for 6.0s
