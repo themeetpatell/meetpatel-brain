@@ -4,6 +4,8 @@ A voice operating system for Mac. Local. Private. Yours.
 
 Not an assistant — an operator. She controls your Mac, lives inside your Obsidian vault, and reasons with a model that runs on your machine. No cloud, no API bills, no eavesdropping.
 
+> **New here?** Read [USAGE.md](USAGE.md) for the 5-minute orientation: HUD tabs, Settings panel, privacy controls, skill packs, and what to say. The rest of this file is install + reference.
+
 ```
 You:    "Hey Maahi, what did I write about BiggDate's ICP last week?"
 Maahi:  "Found three notes. The clearest one is 'BiggDate – ICP v2'.
