@@ -198,3 +198,43 @@ def append_to_daily(content: str) -> dict[str, object]:
 def _now_hm() -> str:
     from datetime import datetime
     return datetime.now().strftime("%H:%M")
+
+
+# ============================================================
+#  TOOL: semantic_search (local embeddings via Ollama)
+# ============================================================
+
+
+def semantic_search(query: str, limit: int = 8) -> dict[str, object]:
+    """Vector search over the vault using local Ollama embeddings.
+
+    Falls back to ``search_vault`` (grep) if the embedding model isn't
+    available or the index is empty. Always returns a result the brain
+    can consume — never raises.
+    """
+    if not query.strip():
+        return {"ok": False, "error": "Empty query."}
+
+    try:
+        from ._vector_index import get_index
+        index = get_index()
+        index.update()
+        hits = index.search(query, limit=limit)
+    except Exception as e:  # noqa: BLE001
+        log.warning("Semantic search unavailable, falling back to grep: %s", e)
+        fallback = search_vault(query, limit=limit)
+        fallback["fallback"] = "grep"
+        return fallback
+
+    if not hits:
+        fallback = search_vault(query, limit=limit)
+        fallback["fallback"] = "grep"
+        return fallback
+
+    return {
+        "ok": True,
+        "query": query,
+        "hits": hits,
+        "count": len(hits),
+        "engine": "embeddings",
+    }

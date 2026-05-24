@@ -2,11 +2,24 @@
 
 Each tool entry maps a stable name to (function, JSON schema, one-line desc).
 The brain only sees what's here.
+
+Third-party skill packs may be dropped into:
+
+    ~/.maahi/skills/<your_skill>.py
+
+The file must export a module-level ``TOOLS: tuple[Tool, ...]``. On startup
+the registry scans that directory, imports each pack in a sandboxed module
+namespace, and merges its tools into the catalog. A pack that fails to
+import logs a warning and is skipped — it never blocks Maahi boot.
 """
 from __future__ import annotations
 
+import importlib.util
+import logging
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from . import (
@@ -22,6 +35,8 @@ from . import (
     web,
 )
 
+log = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class Tool:
@@ -31,13 +46,19 @@ class Tool:
     arg_schema: dict[str, str]   # arg_name -> "type: description"
 
 
-TOOLS: tuple[Tool, ...] = (
+_BUILTIN_TOOLS: tuple[Tool, ...] = (
     # ----- Obsidian -----
     Tool("obsidian_read", "Read a note from the Obsidian vault by name or path.",
          obsidian.read_note, {"name": "str: note name or relative path"}),
-    Tool("obsidian_search", "Full-text search across the whole vault.",
+    Tool("obsidian_search", "Full-text grep search across the whole vault.",
          obsidian.search_vault, {"query": "str: words to search for",
                                  "limit": "int: max hits (default 8)"}),
+    Tool("obsidian_semantic_search",
+         "Semantic vault search using local embeddings (handles synonyms / paraphrases). "
+         "Falls back to grep if embeddings unavailable. Prefer this for "
+         "'what did I write about X' queries.",
+         obsidian.semantic_search, {"query": "str: natural-language query",
+                                     "limit": "int: max hits (default 8)"}),
     Tool("obsidian_list", "List notes in a vault folder.",
          obsidian.list_notes, {"folder": "str: folder relative to vault (empty = root)",
                                "limit": "int: max files (default 50)"}),
@@ -173,6 +194,99 @@ TOOLS: tuple[Tool, ...] = (
           "action": "str: focus|click|press|menu",
           "target": "str: element name or menu path 'File > New'"}),
 )
+
+
+# ============================================================
+#  SKILL PACK LOADER
+# ============================================================
+#
+# Drop a Python file into ~/.maahi/skills/ that exports
+#
+#     TOOLS: tuple[Tool, ...] = (...)
+#
+# and it will appear in the catalog on next startup. The path can be
+# overridden with $MAAHI_SKILLS_DIR for testing or multi-profile setups.
+#
+# Conflict policy: if a pack defines a tool name that already exists
+# (built-in or earlier pack), the earlier definition wins and a warning
+# is logged. Built-ins are sacred — no override of the core surface.
+# ============================================================
+
+
+def _skills_dir() -> Path:
+    override = os.environ.get("MAAHI_SKILLS_DIR")
+    if override:
+        return Path(override).expanduser()
+    return Path.home() / ".maahi" / "skills"
+
+
+def _load_skill_pack(path: Path) -> tuple[Tool, ...]:
+    """Import a single skill pack and return its TOOLS tuple. Empty on failure."""
+    mod_name = f"maahi_skill_{path.stem}"
+    try:
+        spec = importlib.util.spec_from_file_location(mod_name, path)
+        if spec is None or spec.loader is None:
+            log.warning("Skill pack %s: could not build import spec", path)
+            return ()
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    except Exception as e:  # noqa: BLE001
+        log.warning("Skill pack %s failed to import: %s", path, e)
+        return ()
+
+    tools = getattr(module, "TOOLS", None)
+    if tools is None:
+        log.warning("Skill pack %s: no TOOLS attribute exported", path)
+        return ()
+    if not isinstance(tools, (list, tuple)):
+        log.warning("Skill pack %s: TOOLS must be a tuple/list", path)
+        return ()
+    valid: list[Tool] = []
+    for t in tools:
+        if not isinstance(t, Tool):
+            log.warning("Skill pack %s: entry %r is not a Tool — skipping", path, t)
+            continue
+        valid.append(t)
+    return tuple(valid)
+
+
+def _discover_skill_packs() -> tuple[Tool, ...]:
+    """Scan the skills dir and return all valid Tool entries, deduped."""
+    sdir = _skills_dir()
+    if not sdir.exists():
+        return ()
+    seen: set[str] = set()
+    extra: list[Tool] = []
+    for py in sorted(sdir.glob("*.py")):
+        if py.name.startswith("_"):
+            continue
+        for tool in _load_skill_pack(py):
+            if tool.name in seen:
+                log.warning(
+                    "Skill pack tool %r already registered — pack %s ignored",
+                    tool.name, py.name,
+                )
+                continue
+            seen.add(tool.name)
+            extra.append(tool)
+            log.info("Loaded skill: %s (from %s)", tool.name, py.name)
+    return tuple(extra)
+
+
+def _build_catalog() -> tuple[Tool, ...]:
+    builtin_names = {t.name for t in _BUILTIN_TOOLS}
+    extras: list[Tool] = []
+    for t in _discover_skill_packs():
+        if t.name in builtin_names:
+            log.warning(
+                "Skill pack tool %r collides with built-in — ignored", t.name,
+            )
+            continue
+        extras.append(t)
+    return _BUILTIN_TOOLS + tuple(extras)
+
+
+TOOLS: tuple[Tool, ...] = _build_catalog()
 
 
 # ============================================================

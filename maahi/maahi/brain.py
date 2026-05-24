@@ -249,6 +249,12 @@ def _parse_tool_call(text: str) -> tuple[str, dict] | None:
 class Brain:
     """Stateful conversation with Ollama. Owns history + tool loop."""
 
+    # Same call within _CACHE_TTL_S returns the cached tool result without
+    # re-executing — important for noisy reads like `now` or `get_volume`
+    # that the LLM may invoke repeatedly in a single conversation turn.
+    _CACHE_TTL_S = 30.0
+    _CACHE_MAX = 64
+
     def __init__(self) -> None:
         self.cfg = get_config()
         self.history: list[Message] = []
@@ -257,6 +263,53 @@ class Brain:
             timeout=httpx.Timeout(120.0, connect=10.0),
         )
         self._system_message = self._build_system_message()
+        self._tool_cache: dict[tuple, tuple[dict, float]] = {}
+
+    def prewarm(self) -> bool:
+        """Send a 1-token dummy completion so Ollama loads the model.
+
+        Best-effort: failures are logged and swallowed. Never blocks boot.
+        """
+        try:
+            self._http.post(
+                "/v1/chat/completions",
+                json={
+                    "model": self.cfg.brain.model,
+                    "messages": [{"role": "user", "content": "."}],
+                    "stream": False,
+                    "options": {"num_predict": 1},
+                },
+                timeout=httpx.Timeout(180.0, connect=10.0),
+            ).raise_for_status()
+            log.info("Brain prewarm complete: %s loaded", self.cfg.brain.model)
+            return True
+        except httpx.HTTPError as e:
+            log.warning("Brain prewarm failed: %s", e)
+            return False
+
+    @staticmethod
+    def _cache_key(name: str, args: dict) -> tuple:
+        return (name, tuple(sorted((k, repr(v)) for k, v in (args or {}).items())))
+
+    def _cached_or_call(self, name: str, args: dict) -> dict:
+        import time as _t
+        key = self._cache_key(name, args)
+        hit = self._tool_cache.get(key)
+        now = _t.time()
+        if hit is not None and (now - hit[1]) < self._CACHE_TTL_S:
+            log.debug("Tool cache hit: %s", name)
+            return dict(hit[0])
+        result = call_tool(name, args)
+        if (
+            isinstance(result, dict)
+            and result.get("ok", True)
+            and _is_cacheable(name)
+        ):
+            if len(self._tool_cache) >= self._CACHE_MAX:
+                oldest = min(self._tool_cache.items(), key=lambda kv: kv[1][1])[0]
+                self._tool_cache.pop(oldest, None)
+            self._tool_cache[key] = (dict(result), now)
+        return result
 
     # ----- public API -----
 
@@ -275,7 +328,7 @@ class Brain:
             name, args = tool_call
             log.info("Tool call: %s args=%s", name, args)
             emit_tool_start(name, args)
-            result = call_tool(name, args)
+            result = self._cached_or_call(name, args)
             emit_tool_end(name, result)
             # Push both the call and the result so the model sees what happened.
             self.history.append(Message("assistant", reply))
@@ -352,7 +405,7 @@ class Brain:
             name, args = tool_call
             log.info("Tool call: %s args=%s", name, args)
             emit_tool_start(name, args)
-            result = call_tool(name, args)
+            result = self._cached_or_call(name, args)
             emit_tool_end(name, result)
             self.history.append(Message("assistant", reply))
             self.history.append(Message(
@@ -370,3 +423,18 @@ class Brain:
 def _pseudo_tokens(text: str, size: int = 8) -> Iterator[str]:
     for i in range(0, len(text), size):
         yield text[i:i + size]
+
+
+# Tools that are safe to cache for a short TTL. Anything that writes,
+# sends, or has time-sensitive side effects is excluded.
+_CACHEABLE_TOOLS: frozenset[str] = frozenset({
+    "now", "system_info", "get_volume", "frontmost_app", "front_window",
+    "running_apps", "obsidian_list", "obsidian_read", "obsidian_search",
+    "obsidian_semantic_search", "reminders_open", "calendar_today",
+    "calendar_week", "calendar_upcoming", "notes_list", "notes_read",
+    "web_search", "web_fetch",
+})
+
+
+def _is_cacheable(tool_name: str) -> bool:
+    return tool_name in _CACHEABLE_TOOLS
