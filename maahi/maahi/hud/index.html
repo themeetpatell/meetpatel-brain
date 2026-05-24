@@ -211,6 +211,15 @@
   }
   .chip:hover { background: rgba(109,240,255,0.16); color: #fff; }
   .chip:active { transform: translateY(1px); }
+  body.offline .chip {
+    opacity: 0.35; cursor: not-allowed;
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08); color: #7e94a4;
+  }
+  body.offline .chip:hover { background: rgba(255,255,255,0.04); color: #7e94a4; }
+  body.offline #suggestions .hint::after {
+    content: " (offline)"; color: var(--warn);
+  }
 
   #settings { font-size: 12px; }
   #settings h3 {
@@ -646,11 +655,13 @@
     ws.onopen = () => {
       reconnectMs = 600;
       dot.classList.remove("muted");
+      document.body.classList.remove("offline");
       openPanel();
     };
     ws.onmessage = (m) => { try { handleEvent(JSON.parse(m.data)); } catch (e) {} };
     ws.onclose = () => {
       dot.classList.add("muted");
+      document.body.classList.add("offline");
       setTimeout(connect, reconnectMs);
       reconnectMs = Math.min(reconnectMs * 1.6, 5000);
     };
@@ -719,12 +730,24 @@
       suggestions.appendChild(chip);
     });
   }
-  function simulatePhrase(phrase) {
-    appendLine("user", "you", phrase + "  (force-waking — speak when ready)");
-    if (ws && ws.readyState === 1)
-      ws.send(JSON.stringify({ type: "wake_request", payload: {} }));
-    if (navigator.clipboard && navigator.clipboard.writeText)
-      navigator.clipboard.writeText(phrase).catch(() => {});
+  async function simulatePhrase(phrase) {
+    // Don't render the user line ourselves — the text-command worker
+    // emits a transcript("user", text) event for us via the bus, which
+    // shows up over the WS like any other turn. Avoids duplicates.
+    if (!ws || ws.readyState !== 1) {
+      appendLine("error", "err", "Maahi is offline. Run `bash start.sh`.");
+      return;
+    }
+    try {
+      const r = await fetch("/api/command", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text: phrase}),
+      });
+      if (!r.ok) appendLine("error", "err", "Command rejected: HTTP " + r.status);
+    } catch (e) {
+      appendLine("error", "err", "Could not submit: " + e);
+    }
   }
   renderSuggestions();
   setInterval(renderSuggestions, 60 * 60 * 1000);
