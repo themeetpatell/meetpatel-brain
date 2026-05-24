@@ -92,6 +92,15 @@
   }
   .titlebar .tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
   .titlebar .tab.active { color: #06080f; background: var(--accent); font-weight: 600; }
+  .titlebar .expand {
+    margin-left: 6px; padding: 1px 7px;
+    border-radius: 6px; cursor: pointer;
+    color: var(--accent); font-size: 13px;
+    border: 1px solid rgba(109,240,255,0.32);
+    -webkit-app-region: no-drag; line-height: 1.2;
+    transition: background 0.15s;
+  }
+  .titlebar .expand:hover { background: rgba(109,240,255,0.12); }
   .titlebar .state {
     margin-left: auto; font-size: 10.5px; color: #aac6d8;
     font-variant-numeric: tabular-nums; -webkit-app-region: no-drag;
@@ -344,6 +353,7 @@
         <span class="tab" data-view="today">Today</span>
         <span class="tab" data-view="settings">Settings</span>
       </div>
+      <span class="expand" id="expandBtn" title="Open Command Center (full screen)">⤢</span>
       <span id="stateBadge" class="state idle"><span class="led"></span><span id="stateLabel">idle</span></span>
     </div>
 
@@ -653,6 +663,23 @@
     if (ws && ws.readyState === 1)
       ws.send(JSON.stringify({ type: "wake_request", payload: {} }));
   });
+
+  // Expand → open the full Command Center dashboard.
+  // Prefer the native pywebview JS bridge (spawns a real macOS window).
+  // Fall back to opening the dashboard URL in a new browser tab so the
+  // button works even when the HUD is loaded standalone in a browser.
+  const expandBtn = document.getElementById("expandBtn");
+  if (expandBtn) {
+    expandBtn.addEventListener("click", async () => {
+      try {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.open_dashboard) {
+          await window.pywebview.api.open_dashboard();
+          return;
+        }
+      } catch (e) { /* fall through to browser fallback */ }
+      window.open("/dashboard", "_blank");
+    });
+  }
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") panel.classList.remove("open");
   });

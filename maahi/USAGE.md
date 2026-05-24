@@ -15,17 +15,39 @@ You only do this once per Mac.
 
 ---
 
-## The three places to look
+## Two surfaces
 
-The HUD has three tabs at the top:
+Maahi has two windows, by design:
 
-| Tab | What it shows |
+| Window | When you see it | What it's for |
+|---|---|---|
+| **Floating HUD** | Always on, bottom-right corner | Ambient state. Pulse dot + recent transcript. Click the dot to force-wake without saying "Hey Maahi". |
+| **Command Center** | Opens on demand | Full-screen dashboard for configuration, memory, skills, logs — and typing commands when voice isn't an option. |
+
+**Three ways to open the Command Center:**
+
+1. Click the **⤢ Expand** button in the floating HUD titlebar — opens a native macOS window.
+2. Menu bar icon → **Open Command Center** — opens in a browser tab.
+3. Visit `http://127.0.0.1:7421/dashboard` directly.
+
+The Command Center has a sidebar with these views:
+
+| View | What |
 |---|---|
-| **Live** | What Maahi is doing right now — transcripts, tool calls, errors |
-| **Today** | Everything you've said to Maahi today (delete, pause) |
-| **Settings** | Voice, brain, wake phrases, owner profile |
+| **Live** | Real-time transcript + tool-call stream + error cards with one-click "Fix it" buttons |
+| **Today** | Today's complete transcript with Pause / Delete |
+| **Profile / Voice / Brain / Wake** | Settings — broken into focused panels |
+| **Memory** | Browse `facts.md`, `preferences.md`, and vector-index stats |
+| **Skills** | Every tool Maahi can use, built-in or skill-packed |
+| **Permissions** | Live status of all 5 macOS permissions + Grant deep-links |
+| **Logs** | Last 300 lines of `maahi.log` |
+| **About** | Strict-local promise, file layout |
 
-The cyan **dot** in the corner is always visible. Click it to "wake" Maahi without saying the wake phrase — useful in meetings. Orange dot = paused. Gray dot = disconnected.
+At the bottom: rotating **Try saying…** chips, plus a **text input** — type any command and press Enter. Useful in meetings, noisy rooms, or when you'd rather not speak. ⌘K focuses the input from any view.
+
+The right rail shows live telemetry: state, brain model + last probe latency, calendar peek (next ~12 hr), open reminders, and recent activity.
+
+The cyan **dot** in the floating HUD is always visible. Click to force-wake. Orange dot = paused. Gray dot = disconnected.
 
 ---
 

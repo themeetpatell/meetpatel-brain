@@ -169,6 +169,12 @@ def run() -> None:
     )
     worker.start()
 
+    # Text-command worker: typed commands from the dashboard /api/command.
+    threading.Thread(
+        target=_text_command_worker, args=(stop_event,),
+        name="text-cmd-worker", daemon=True,
+    ).start()
+
     # Hand the main thread to the HUD window (blocks until closed), or
     # wait for the worker in headless mode.
     if cfg.hud.enabled:
@@ -191,6 +197,49 @@ def run() -> None:
             menubar_proc.terminate()
         except Exception:  # noqa: BLE001
             pass
+
+
+def _text_command_worker(stop_event: threading.Event) -> None:
+    """Process typed commands posted to /api/command.
+
+    Subscribes to ``text_command`` events on the bus and runs each through
+    its own ``Brain`` instance + ``Speaker``. Independent history from the
+    voice path — fine for v1 — so a typed query doesn't confuse the voice
+    conversation and vice versa.
+    """
+    import asyncio as _asyncio
+    from .brain import Brain
+    from .speaker import Speaker
+
+    brain = Brain()
+    speaker = Speaker()
+    sub = bus().subscribe()
+
+    async def _drain() -> None:
+        while not stop_event.is_set():
+            ev = await sub.get()
+            if ev.type != "text_command":
+                continue
+            text = (ev.payload or {}).get("text", "").strip()
+            if not text:
+                continue
+            log.info("Text command: %r", text)
+            try:
+                emit_transcript("user", text)
+                emit_state("thinking")
+                reply = brain.respond(text)  # emits maahi transcript + tool events
+                emit_state("speaking")
+                speaker.say(reply)
+            except Exception as e:  # noqa: BLE001
+                log.exception("Text command failed: %s", e)
+                emit_error("text_command", str(e))
+            finally:
+                emit_state("idle")
+
+    try:
+        _asyncio.run(_drain())
+    except Exception:  # noqa: BLE001
+        log.exception("Text command worker crashed")
 
 
 def _spawn_menubar():

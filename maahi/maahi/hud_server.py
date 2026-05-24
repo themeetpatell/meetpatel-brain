@@ -58,6 +58,10 @@ class OpenPaneBody(BaseModel):
 class ListeningBody(BaseModel):
     paused: bool
 
+
+class CommandBody(BaseModel):
+    text: str
+
 log = logging.getLogger(__name__)
 
 HUD_DIR = Path(__file__).resolve().parent / "hud"
@@ -75,6 +79,13 @@ def _build_app() -> FastAPI:
         if not index.exists():
             return {"error": "HUD assets missing", "expected": str(index)}
         return FileResponse(str(index))
+
+    @app.get("/dashboard")
+    async def dashboard() -> Any:
+        path = HUD_DIR / "dashboard.html"
+        if not path.exists():
+            return {"error": "Dashboard assets missing", "expected": str(path)}
+        return FileResponse(str(path))
 
     @app.get("/health")
     async def health() -> dict[str, Any]:
@@ -166,6 +177,59 @@ def _build_app() -> FastAPI:
                 for t in TOOLS
             ],
         }
+
+    # ----------------------------------------------------------
+    # Dashboard backend
+    # ----------------------------------------------------------
+
+    @app.post("/api/command")
+    async def submit_text_command(body: CommandBody) -> dict[str, Any]:
+        from . import dashboard_api
+        return dashboard_api.submit_command(body.text)
+
+    @app.get("/api/memory/facts")
+    async def memory_facts() -> dict[str, Any]:
+        from . import dashboard_api
+        return dashboard_api.get_facts()
+
+    @app.get("/api/memory/preferences")
+    async def memory_prefs() -> dict[str, Any]:
+        from . import dashboard_api
+        return dashboard_api.get_preferences()
+
+    @app.get("/api/memory/index_stats")
+    async def memory_index() -> dict[str, Any]:
+        from . import dashboard_api
+        return dashboard_api.get_index_stats()
+
+    @app.get("/api/logs")
+    async def logs(lines: int = 200) -> dict[str, Any]:
+        from . import dashboard_api
+        return dashboard_api.tail_logs(lines)
+
+    @app.post("/api/dashboard/open")
+    async def open_dashboard() -> dict[str, Any]:
+        """Publish a dashboard:open event. The main process listens and
+        either spawns the pywebview window (if no other is open) or opens
+        the dashboard URL in the default browser as fallback."""
+        bus().publish("dashboard:open", {})
+        return {"ok": True}
+
+    @app.get("/api/calendar/upcoming")
+    async def calendar_upcoming(minutes: int = 480) -> dict[str, Any]:
+        from .tools import calendar_tool
+        try:
+            return calendar_tool.events_starting_within(minutes=minutes)
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "error": str(e), "events": []}
+
+    @app.get("/api/reminders/open")
+    async def reminders_open(limit: int = 10) -> dict[str, Any]:
+        from .tools import reminders
+        try:
+            return reminders.list_open(limit=limit)
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "error": str(e), "reminders": []}
 
     @app.websocket("/ws")
     async def ws(ws: WebSocket) -> None:
