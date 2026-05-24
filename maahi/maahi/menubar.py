@@ -50,19 +50,35 @@ def main() -> int:
             self.menu = [
                 rumps.MenuItem("Status: …", callback=None),
                 None,
-                rumps.MenuItem("Open HUD",           callback=self._open_hud),
-                rumps.MenuItem("Pause listening",    callback=self._toggle_listen),
+                rumps.MenuItem("Open Command Center",  callback=self._open_dashboard),
+                rumps.MenuItem("Open HUD",             callback=self._open_hud),
+                rumps.MenuItem("Pause listening",      callback=self._toggle_listen),
                 None,
-                rumps.MenuItem("Settings…",          callback=self._open_settings),
-                rumps.MenuItem("Permissions…",       callback=self._open_perms),
+                rumps.MenuItem("Settings…",            callback=self._open_settings),
+                rumps.MenuItem("Permissions…",         callback=self._open_perms),
+                rumps.MenuItem("Memory…",              callback=self._open_memory),
+                rumps.MenuItem("Skills…",              callback=self._open_skills),
+                rumps.MenuItem("Logs…",                callback=self._open_logs),
                 None,
-                rumps.MenuItem("Quit menu bar",      callback=self._quit),
+                rumps.MenuItem("Quit menu bar",        callback=self._quit),
             ]
             rumps.Timer(self._poll, POLL_SECONDS).start()
             self._poll(None)
 
         def _open_hud(self, _) -> None:
             _open_url(HUD_HOST)
+
+        def _open_dashboard(self, _) -> None:
+            _open_url(HUD_HOST + "/dashboard")
+
+        def _open_memory(self, _) -> None:
+            _open_url(HUD_HOST + "/dashboard#memory")
+
+        def _open_skills(self, _) -> None:
+            _open_url(HUD_HOST + "/dashboard#skills")
+
+        def _open_logs(self, _) -> None:
+            _open_url(HUD_HOST + "/dashboard#logs")
 
         def _toggle_listen(self, _) -> None:
             self.is_paused = not self.is_paused
@@ -82,10 +98,10 @@ def main() -> int:
             )
 
         def _open_settings(self, _) -> None:
-            _open_url(HUD_HOST + "/#settings")
+            _open_url(HUD_HOST + "/dashboard#voice")
 
         def _open_perms(self, _) -> None:
-            _open_url(HUD_HOST + "/#permissions")
+            _open_url(HUD_HOST + "/dashboard#permissions")
 
         def _quit(self, _) -> None:
             rumps.quit_application()

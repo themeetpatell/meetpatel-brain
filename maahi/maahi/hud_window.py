@@ -1,9 +1,21 @@
-"""HUD window — pywebview wrapper.
+"""HUD windows — pywebview wrappers.
 
-Opens a frameless, transparent, always-on-top WKWebView pointed at the
-local HUD server. Must run on the macOS main thread (pywebview hard
-requirement), so main.py hands the main thread to this module after
-backgrounding the wake loop.
+Two windows share one pywebview process:
+
+  1. Floating HUD  — frameless, transparent, always-on-top. Created at
+                     boot. Shows ambient state, transcripts, the pulse dot,
+                     try-saying chips. Has an ⤢ Expand button that calls
+                     ``window.pywebview.api.open_dashboard()``.
+
+  2. Command Center dashboard  — full-window, resizable, with frame.
+                     Lazily created the first time the user expands. From
+                     then on, ``open_dashboard()`` raises the existing
+                     window instead of duplicating it.
+
+pywebview requires both window creations to happen on the macOS main
+thread. The first is created in ``run()``; the second is created
+synchronously from inside ``MaahiAPI.open_dashboard()`` which is invoked
+on the main thread by pywebview's JS bridge.
 """
 from __future__ import annotations
 
@@ -13,6 +25,11 @@ from typing import Any
 from .config import HudCfg
 
 log = logging.getLogger(__name__)
+
+DASHBOARD_WIDTH = 1280
+DASHBOARD_HEIGHT = 820
+DASHBOARD_MIN_W = 900
+DASHBOARD_MIN_H = 600
 
 
 def _resolve_position(cfg: HudCfg) -> tuple[int, int]:
@@ -32,8 +49,54 @@ def _resolve_position(cfg: HudCfg) -> tuple[int, int]:
     return int(x), int(y)
 
 
+class MaahiAPI:
+    """JS bridge exposed to the floating HUD.
+
+    Methods here become callable from JS as
+    ``await window.pywebview.api.<method_name>(...)``.
+    """
+
+    def __init__(self, cfg: HudCfg) -> None:
+        self.cfg = cfg
+        self._dashboard_win: Any = None
+
+    def open_dashboard(self) -> dict[str, Any]:
+        try:
+            import webview
+        except ImportError:
+            return {"ok": False, "error": "pywebview not installed"}
+
+        existing = self._dashboard_win
+        if existing is not None:
+            try:
+                existing.show()
+                existing.restore()
+                return {"ok": True, "action": "raised"}
+            except Exception as e:  # noqa: BLE001
+                log.debug("Could not raise existing dashboard window: %s", e)
+                self._dashboard_win = None
+
+        url = f"http://127.0.0.1:{self.cfg.port}/dashboard"
+        try:
+            self._dashboard_win = webview.create_window(
+                title="Maahi — Command Center",
+                url=url,
+                width=DASHBOARD_WIDTH,
+                height=DASHBOARD_HEIGHT,
+                min_size=(DASHBOARD_MIN_W, DASHBOARD_MIN_H),
+                resizable=True,
+                frameless=False,
+                on_top=False,
+                background_color="#06080F",
+            )
+            return {"ok": True, "action": "opened"}
+        except Exception as e:  # noqa: BLE001
+            log.exception("Could not open dashboard window: %s", e)
+            return {"ok": False, "error": str(e)}
+
+
 def run(cfg: HudCfg) -> None:
-    """Block on the main thread running the HUD window."""
+    """Block on the main thread running the floating HUD (lazy dashboard)."""
     if not cfg.enabled:
         log.info("HUD window disabled in config")
         return
@@ -45,6 +108,7 @@ def run(cfg: HudCfg) -> None:
 
     x, y = _resolve_position(cfg)
     url = f"http://127.0.0.1:{cfg.port}/"
+    api = MaahiAPI(cfg)
 
     create_kwargs: dict[str, Any] = dict(
         title="Maahi",
@@ -58,9 +122,8 @@ def run(cfg: HudCfg) -> None:
         easy_drag=True,
         on_top=cfg.always_on_top,
         transparent=cfg.transparent,
+        js_api=api,
     )
-    # pywebview only accepts 6-digit hex. With transparent=True we omit
-    # background_color entirely; the framework handles the clear backdrop.
     if not cfg.transparent:
         create_kwargs["background_color"] = "#0A0E18"
 
@@ -77,6 +140,7 @@ def run(cfg: HudCfg) -> None:
             resizable=False,
             frameless=True,
             on_top=cfg.always_on_top,
+            js_api=api,
         )
 
     webview.start()
