@@ -251,3 +251,15 @@ def get_config() -> Config:
     if _cfg is None:
         _cfg = load_config()
     return _cfg
+
+
+def reload_config() -> Config:
+    """Drop the cached singleton and re-read config.yaml from disk.
+
+    Called by the Settings UI after writing a new config so subsequent
+    get_config() returns the new values. Long-lived consumers that
+    captured cfg fields at construction time may need to re-fetch.
+    """
+    global _cfg
+    _cfg = None
+    return get_config()

@@ -32,5 +32,8 @@ pyobjc-framework-Cocoa>=10.0   # pywebview backend on macOS
 pyautogui>=0.9.54
 Pillow>=10.0
 
+# ----- menu bar -----
+rumps>=0.4.0          # macOS NSStatusItem wrapper; optional but recommended
+
 # ----- optional -----
 # pytesseract>=0.3.10   # uncomment for screen OCR (Tesseract path)

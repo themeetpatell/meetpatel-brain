@@ -124,6 +124,11 @@ def run() -> None:
     if cfg.hud.enabled:
         hud_server.start_in_thread(cfg.hud)
 
+    # Best-effort: spawn the menu-bar helper as a separate process. It runs
+    # rumps (NSStatusItem) which insists on the macOS main thread — same as
+    # pywebview — so it can't share this process.
+    menubar_proc = _spawn_menubar()
+
     # Listener thread: turn HUD pulse-dot clicks (hud:wake_request) into
     # a force-wake window so the next utterance is treated as a command.
     def _hud_command_listener() -> None:
@@ -178,6 +183,31 @@ def run() -> None:
 
     log.info("Maahi shutting down…")
     worker.join(timeout=3.0)
+    if menubar_proc is not None:
+        try:
+            menubar_proc.terminate()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def _spawn_menubar():
+    """Start the menu-bar helper subprocess. Returns Popen or None on failure."""
+    try:
+        import rumps  # noqa: F401  — probe so we don't spawn a noop process
+    except ImportError:
+        log.info("rumps not installed; menu-bar app skipped")
+        return None
+    try:
+        import subprocess
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "maahi.menubar"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        log.info("Menu-bar helper spawned (pid=%d)", proc.pid)
+        return proc
+    except Exception as e:  # noqa: BLE001
+        log.warning("Could not spawn menu-bar helper: %s", e)
+        return None
 
 
 def _wake_loop(stop_event: threading.Event) -> None:
@@ -191,6 +221,12 @@ def _wake_loop(stop_event: threading.Event) -> None:
     log.info("Maahi online. Voice: %s | Model: %s", cfg.tts.voice, cfg.brain.model)
     emit_state("idle")
     speaker.say("Maahi online.")
+
+    # Prewarm Ollama in the background so the first real command isn't
+    # paying the model-load tax. Best-effort.
+    threading.Thread(
+        target=brain.prewarm, name="brain-prewarm", daemon=True,
+    ).start()
 
     try:
         with Microphone() as mic:
