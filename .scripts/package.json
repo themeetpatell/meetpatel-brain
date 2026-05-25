@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Personal Obsidian vault + mind-graph extractor for themeetpatel.com/mind",
   "scripts": {
-    "extract": "node scripts/extract-graph.mjs",
-    "extract:historical": "node scripts/extract-historical.mjs",
-    "test": "node --test scripts/__tests__/*.test.mjs"
+    "extract": "node extract-graph.mjs",
+    "extract:historical": "node extract-historical.mjs",
+    "test": "node --test __tests__/*.test.mjs"
   },
   "dependencies": {
     "zod": "^3.23.8"
