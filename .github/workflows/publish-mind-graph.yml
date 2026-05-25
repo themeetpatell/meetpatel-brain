@@ -41,14 +41,15 @@ jobs:
         with:
           node-version: "20"
           cache: npm
+          cache-dependency-path: .scripts/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefix .scripts
 
       - name: Run extractor
         run: |
           mkdir -p out/${{ env.SITE_PATH }}
-          node scripts/extract-graph.mjs --vault . --out out/${{ env.SITE_PATH }}
+          node .scripts/extract-graph.mjs --vault . --out out/${{ env.SITE_PATH }}
 
       - name: Show extractor output summary
         run: |
@@ -88,7 +89,7 @@ jobs:
             Contains only the sanitized graph topology used by `/mind` —
             no titles, no body, no folder paths beyond the top-level PARA
             bucket. See the extractor at
-            `themeetpatell/meetpatel-brain:scripts/extract-graph.mjs`.
+            `themeetpatell/meetpatel-brain:.scripts/extract-graph.mjs`.
 
             Merge to ship.
           labels: |

@@ -10,3 +10,18 @@ node_modules/
 
 # Extractor outputs (the published JSON lives in the site repo, not here)
 public/mind/
+
+# Python virtualenvs (never commit binaries)
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE / editor cruft
+.idea/
+.vscode/
+
+# Maahi (deleted project, but stale launchd job still writes logs here)
+maahi/
